@@ -56,10 +56,26 @@ public class PrimaryTestCases {
     public void testSFW() {
         try{
             MyCalciteConnection calciteConnection = new MyCalciteConnection();
-            String query = "select first_name from actor where actor_id > 100 and actor_id < 150";
+//            String query = "select first_name from actor where actor_id > 100 and actor_id < 150";
+             String query = "select actor_id, 2.5*actor_id + 5 from actor where actor_id > 100 and actor_id < 150";
             
             RelNode relNode = createRelNode(query, calciteConnection);
             List<Object []> result = eval(relNode, calciteConnection);
+
+            // Tip: You can use the following code to print the result and debug
+
+            if(result == null) {
+                System.out.println("[-] No result found");
+            }
+            else{
+                System.out.println("[+] Final Output : ");
+                for (Object [] row : result) {
+                    for (Object col : row) {
+                        System.out.print(col + " ");
+                    }
+                    System.out.println();
+                }
+            }
 
             assert(result.size() == 49);
             for(Object [] row : result){
@@ -123,21 +139,6 @@ public class PrimaryTestCases {
             for(int i = 0; i < result.size(); i++){
                 assert(result.get(i)[0].equals(expected[i]));
             }
-
-            // Tip: You can use the following code to print the result and debug
-
-            // if(result == null) {
-            //     System.out.println("[-] No result found");
-            // }
-            // else{
-            //     System.out.println("[+] Final Output : ");
-            //     for (Object [] row : result) {
-            //         for (Object col : row) {
-            //             System.out.print(col + " ");
-            //         }
-            //         System.out.println();
-            //     }
-            // }
 
             calciteConnection.close();
         }

@@ -32,3 +32,6 @@ out/
 *.iml
 
 in/ac/iitd/src/test/java/MyTest.java
+
+# config files
+*.code-workspace
