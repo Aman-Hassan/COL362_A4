@@ -22,7 +22,6 @@ import rel.PProject;
 import rel.PTableScan;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-
 public class PRules {
 
     private PRules(){
@@ -163,7 +162,6 @@ public class PRules {
     }
 
     private static class PSortRule extends ConverterRule {
-
         public static final Config DEFAULT_CONFIG = Config.INSTANCE
                 .withConversion(LogicalSort.class, Convention.NONE,
                         PConvention.INSTANCE, "PSortRule")

@@ -10,6 +10,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.util.NlsString;
 
 import convention.PConvention;
 
@@ -86,9 +87,7 @@ public class PProject extends Project implements PRel {
             case NOT:
                 return !(Boolean) operand1;
             case EQUALS:
-                return operand1.equals(operand2);
             case NOT_EQUALS:
-                return !operand1.equals(operand2);
             case GREATER_THAN:
             case GREATER_THAN_OR_EQUAL:
             case LESS_THAN:
@@ -109,8 +108,7 @@ public class PProject extends Project implements PRel {
 
         switch (operandType) {
             case "VARCHAR":
-                int result = ((String) operand1).compareTo((String) operand2);
-                return compareResult(kind, result);
+                return compareResult(kind, ((String) operand1).compareTo((String) operand2));
             case "INTEGER":
                 return compareResult(kind, Integer.compare(((Number) operand1).intValue(),((Number) operand2).intValue()));
             case "FLOAT":
@@ -124,6 +122,10 @@ public class PProject extends Project implements PRel {
     
     private boolean compareResult(SqlKind kind, int result) {
         switch (kind) {
+            case EQUALS:
+                return result == 0;
+            case NOT_EQUALS:
+                return result != 0;
             case GREATER_THAN:
                 return result > 0;
             case GREATER_THAN_OR_EQUAL:
@@ -291,6 +293,9 @@ public class PProject extends Project implements PRel {
         else if (expr instanceof RexLiteral){
             if (type.equals("DECIMAL")) {
                 return ((RexLiteral) expr).getValueAs(BigDecimal.class); // returns a BigDecimal
+            }
+            if (((RexLiteral) expr).getValue() instanceof NlsString) {
+                return ((RexLiteral) expr).getValueAs(NlsString.class).getValue(); // returns a String
             }
             return ((RexLiteral) expr).getValue(); // returns a String
         }

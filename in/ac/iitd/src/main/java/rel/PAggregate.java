@@ -11,18 +11,19 @@ import org.apache.calcite.util.ImmutableBitSet;
 import convention.PConvention;
 
 import java.util.List;
+import java.util.ArrayList;
 
 // Count, Min, Max, Sum, Avg
 public class PAggregate extends Aggregate implements PRel {
 
     public PAggregate(
-            RelOptCluster cluster,
-            RelTraitSet traitSet,
-            List<RelHint> hints,
-            RelNode input,
-            ImmutableBitSet groupSet,
-            List<ImmutableBitSet> groupSets,
-            List<AggregateCall> aggCalls) {
+            RelOptCluster cluster, // RelOptCluster -> A cluster of relational expressions
+            RelTraitSet traitSet, // RelTraitSet -> A set of relational expression traits
+            List<RelHint> hints, // List of hints -> Hints are used to provide additional information to the planner to make better decisions
+            RelNode input, // Input relational expression - The relational expression which is the input to this relational expression
+            ImmutableBitSet groupSet, // ImmutableBitSet groupSet -> Grouping set - A set of columns that are being grouped
+            List<ImmutableBitSet> groupSets, // List of ImmutableBitSet groupSets -> Grouping sets - A list of sets of columns that are being grouped
+            List<AggregateCall> aggCalls) { // List of AggregateCall aggCalls -> Aggregate calls - A list of aggregate functions to be computed - To consider: Sum, Avg, Count, Min, Max, Distinct?
         super(cluster, traitSet, hints, input, groupSet, groupSets, aggCalls);
         assert getConvention() instanceof PConvention;
     }
@@ -38,11 +39,29 @@ public class PAggregate extends Aggregate implements PRel {
         return "PAggregate";
     }
 
+    private List<Object[]> rows = new ArrayList<>();
+    private List<Object[]> aggregatedRows = new ArrayList<>();
+
+
     // returns true if successfully opened, false otherwise
+    // Do the aggregation here
     @Override
     public boolean open() {
+        // We would need to use the input to get the rows, group the rows according to the list of groupSets, and then apply the aggregate functions according to the list of aggCalls
         logger.trace("Opening PAggregate");
-        /* Write your code here */
+        PRel child = (PRel) this.input;
+        if (child.open()) {
+
+            // Get the rows from the input
+            while (child.hasNext()) {
+                rows.add(child.next());
+            }
+
+            for (Object[] row : rows) {
+            }
+        }
+
+
         return false;
     }
 
@@ -50,7 +69,8 @@ public class PAggregate extends Aggregate implements PRel {
     @Override
     public void close() {
         logger.trace("Closing PAggregate");
-        /* Write your code here */
+        PRel child = (PRel) this.input;
+        child.close();
         return;
     }
 
@@ -58,7 +78,9 @@ public class PAggregate extends Aggregate implements PRel {
     @Override
     public boolean hasNext() {
         logger.trace("Checking if PAggregate has next");
-        /* Write your code here */
+        if (aggregatedRows.size() > 0) {
+            return true;
+        }
         return false;
     }
 
@@ -66,6 +88,9 @@ public class PAggregate extends Aggregate implements PRel {
     @Override
     public Object[] next() {
         logger.trace("Getting next row from PAggregate");
+        if (hasNext()) {
+            return aggregatedRows.remove(0);
+        }
         return null;
     }
 

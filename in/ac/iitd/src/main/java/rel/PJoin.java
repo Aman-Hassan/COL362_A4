@@ -51,7 +51,11 @@ public class PJoin extends Join implements PRel {
     @Override
     public boolean open() {
         logger.trace("Opening PJoin");
-        /* Write your code here */
+        PRel leftChild = (PRel) this.left;
+        PRel rightChild = (PRel) this.right;
+        if (leftChild.open() && rightChild.open()) {
+            return true;
+        }
         return false;
     }
 

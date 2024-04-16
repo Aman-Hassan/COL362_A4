@@ -56,7 +56,8 @@ public class PrimaryTestCases {
     public void testSFW() {
         try{
             MyCalciteConnection calciteConnection = new MyCalciteConnection();
-            String query = "select actor_id, first_name from actor where actor_id > 100 and actor_id < 150 order by actor_id DESC";
+            String query = "select actor_id from actor where actor_id >= 100.0 and actor_id <= 150";
+//            String query = "select first_name from actor order by first_name DESC limit 10";
 //             String query = "select actor_id, actor_id*2.5 + 5 from actor where actor_id > 100 and 150 < actor_id";
             
             RelNode relNode = createRelNode(query, calciteConnection);
@@ -259,12 +260,26 @@ public class PrimaryTestCases {
     public void testSort(){
         try{
             MyCalciteConnection calciteConnection = new MyCalciteConnection();
-            String query = "select f.title from\n"
-                + "(select title, length from film where rating = 'PG')\n"
-                + "as f where f.length < 50 order by f.title DESC";
-            
+//            String query = "select f.title from\n"
+//                + "(select title, length from film where rating = 'PG')\n"
+//                + "as f where f.length < 50 order by f.title DESC";
+            String query = "select f.title from (select title, length from film where rating = 'PG') as f where f.length >= 50 order by f.title DESC";
+//            String query = "select f.title from film as f where f.length < 50 order by f.title DESC";
             RelNode relNode = createRelNode(query, calciteConnection);
             List<Object []> result = eval(relNode, calciteConnection);
+
+            if(result == null) {
+                System.out.println("[-] No result found");
+            }
+            else{
+                System.out.println("[+] Final Output : ");
+                for (Object [] row : result) {
+                    for (Object col : row) {
+                        System.out.print(col + " ");
+                    }
+                    System.out.println();
+                }
+            }
 
             List<String> expected = Arrays.asList("Suspects Quills", "Shanghai Tycoon", "Rush Goodfellas", "Pelican Comforts", "Iron Moon", "Hurricane Affair", "Heaven Freedom");
 

@@ -49,25 +49,31 @@ public class PSort extends Sort implements PRel{
     }
 
     private List<Object[]> sortedRows = new ArrayList<>();
-    private int int_offset = (Integer) ((RexLiteral) this.offset).getValue();
-    private int int_fetch = (Integer) ((RexLiteral) this.fetch).getValue();
+    // NOTE: Weirdly fetch and offset mean the opposite things    
+    private int int_offset = 0;
+    private int int_fetch = 0;
 
     // returns true if successfully opened, false otherwise
     @Override
     public boolean open(){
         logger.trace("Opening PSort");
-        PRel child = (PRel) this.getInput();
+        PRel child = (PRel) this.input;
         if (child.open()) {
             while (child.hasNext()) {
                 sortedRows.add(child.next());
             }
+            int_offset = fetch instanceof RexLiteral ? ((RexLiteral) fetch).getValueAs(Integer.class) : 0;
+            int_fetch = offset instanceof RexLiteral ? int_offset + ((RexLiteral) offset).getValueAs(Integer.class) : sortedRows.size();
+            // debugging statements
+            System.out.println("Size of sortedRows: " + sortedRows.size());
+            System.out.println("Offset: " + int_offset);
+            System.out.println("Fetch: " + int_fetch);
             sortedRows.sort((a, b) -> {
                 for (int i = 0; i < this.collation.getFieldCollations().size(); i++) {
                     int index = this.collation.getFieldCollations().get(i).getFieldIndex();
-                    Object val1 = a[index]; //! Mi ght need to evaluate the expression here
+                    Object val1 = a[index]; //! Might need to evaluate the expression here
                     Object val2 = b[index]; //! Might need to evaluate the expression here
                     int compare_val = 0;
-
                     if (val1 instanceof Integer) {
                         compare_val = ((Integer) val1).compareTo((Integer) val2); // compareTo() would return -1 if val1 < val2, 0 if val1 == val2, 1 if val1 > val2
                     } else if (val1 instanceof String) {
@@ -98,7 +104,7 @@ public class PSort extends Sort implements PRel{
     @Override
     public void close(){
         logger.trace("Closing PSort");
-        PRel child = (PRel) this.getInput();
+        PRel child = (PRel) this.input;
         child.close();
     }
 
